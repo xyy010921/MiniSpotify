@@ -1,5 +1,6 @@
 package com.laioffer.spotify.ui.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -29,14 +30,14 @@ import okhttp3.Response
 
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel) {
+fun HomeScreen(viewModel: HomeViewModel, onTab: (Album) -> Unit) {
     val uiState by viewModel.uiState.collectAsState()
 
-    HomeScreenContent(uiState = uiState)
+    HomeScreenContent(uiState = uiState, onTab)
 }
 
 @Composable
-fun HomeScreenContent(uiState: HomeUiState) {
+fun HomeScreenContent(uiState: HomeUiState, onTap: (Album) -> Unit) {
     LazyColumn(modifier = Modifier.padding(16.dp)) {
         item {
             HomeScreenHeader()
@@ -51,14 +52,14 @@ fun HomeScreenContent(uiState: HomeUiState) {
             }
             else -> {
                 items(uiState.feed) { item ->
-                    AlbumSection(section = item)
+                    AlbumSection(section = item, onTap)
                 }
             }
         }
     }
 }
 @Composable
-private fun AlbumSection(section: Section) {
+private fun AlbumSection(section: Section, onTap: (Album) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -74,7 +75,7 @@ private fun AlbumSection(section: Section) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(section.albums) { item ->
-                AlbumCover(item)
+                AlbumCover(item, onTap)
             }
         }
 
@@ -82,7 +83,7 @@ private fun AlbumSection(section: Section) {
 }
 
 @Composable
-private fun AlbumCover(album: Album) {
+private fun AlbumCover(album: Album, onTap: (Album) -> Unit) {
     val context = LocalContext.current
 
     val okHttpClient = OkHttpClient.Builder()
@@ -93,7 +94,7 @@ private fun AlbumCover(album: Album) {
         .okHttpClient(okHttpClient)
         .build()
 
-    Column {
+    Column(modifier = Modifier.clickable{onTap(album)}) {
         Box(modifier = Modifier.size(160.dp)) {
             AsyncImage(
                 model = album.cover,
