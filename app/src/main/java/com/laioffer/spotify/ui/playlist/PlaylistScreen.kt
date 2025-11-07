@@ -45,6 +45,7 @@ fun PlaylistScreen(playlistViewModel: PlaylistViewModel){
 
     PlaylistScreenContent(playlistUiState = plistUiState, onTapFavorite = {
         Log.d("PlaylistScreen", "Tap favorite $it")
+        playlistViewModel.toggleFavorite(it)
     })
 }
 
