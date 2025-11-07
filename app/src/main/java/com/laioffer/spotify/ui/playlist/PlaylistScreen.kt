@@ -1,6 +1,8 @@
 package com.laioffer.spotify.ui.playlist
 
+import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -41,17 +43,20 @@ import com.laioffer.spotify.datamodel.Song
 fun PlaylistScreen(playlistViewModel: PlaylistViewModel){
     val plistUiState by playlistViewModel.uiState.collectAsState()
 
-    PlaylistScreenContent(playlistUiState = plistUiState)
+    PlaylistScreenContent(playlistUiState = plistUiState, onTapFavorite = {
+        Log.d("PlaylistScreen", "Tap favorite $it")
+    })
 }
 
 @Composable
-private fun PlaylistScreenContent(playlistUiState: PlaylistUiState){
+private fun PlaylistScreenContent(playlistUiState: PlaylistUiState, onTapFavorite: (Boolean) -> Unit){
     Column(modifier = Modifier
         .padding(16.dp)
     ){
         Cover(
             album = playlistUiState.album,
-            isFavorite = playlistUiState.isFavorite
+            isFavorite = playlistUiState.isFavorite,
+            onTapFavorite = onTapFavorite
         )
 
         PlaylistHeader(album = playlistUiState.album)
@@ -63,7 +68,8 @@ private fun PlaylistScreenContent(playlistUiState: PlaylistUiState){
 @Composable
 private fun Cover(
     album: Album,
-    isFavorite: Boolean
+    isFavorite: Boolean,
+    onTapFavorite: (Boolean) -> Unit
 ){
     Column(
         modifier = Modifier.fillMaxWidth()
@@ -71,9 +77,13 @@ private fun Cover(
         Box(
             modifier = Modifier.fillMaxWidth()
         ){
-            Icon(modifier = Modifier
-                .size(28.dp)
-                .align(Alignment.TopEnd),
+            Icon(
+                modifier = Modifier
+                    .size(28.dp)
+                    .align(Alignment.TopEnd)
+                    .clickable{
+                    onTapFavorite(!isFavorite)
+                },
                 painter = painterResource(
                     id = if(isFavorite){
                         R.drawable.ic_favorite_24
