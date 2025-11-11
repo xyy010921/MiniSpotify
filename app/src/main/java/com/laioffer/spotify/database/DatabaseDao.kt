@@ -18,4 +18,7 @@ interface DatabaseDao {
 
     @Delete
     fun unFavoriteAlbum(album : Album)
+
+    @Query("SELECT * FROM Album")
+    fun fetchFavoriteAlbums() : Flow<List<Album>>
 }

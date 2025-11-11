@@ -20,4 +20,7 @@ class FavoriteAlbumRepository @Inject constructor(private val databaseDao: Datab
         databaseDao.unFavoriteAlbum(album)
     }
 
+    fun fetchFavoriteAlbums() : Flow<List<Album>> =
+        databaseDao.fetchFavoriteAlbums().flowOn(Dispatchers.IO)
+
 }
