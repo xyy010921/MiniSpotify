@@ -22,5 +22,4 @@ class FavoriteAlbumRepository @Inject constructor(private val databaseDao: Datab
 
     fun fetchFavoriteAlbums() : Flow<List<Album>> =
         databaseDao.fetchFavoriteAlbums().flowOn(Dispatchers.IO)
-
 }

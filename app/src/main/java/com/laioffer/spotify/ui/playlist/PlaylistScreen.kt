@@ -37,20 +37,39 @@ import com.laioffer.spotify.R
 import com.laioffer.spotify.datamodel.Album
 import com.laioffer.spotify.datamodel.Playlist
 import com.laioffer.spotify.datamodel.Song
+import com.laioffer.spotify.player.PlayerUiState
+import com.laioffer.spotify.player.PlayerViewModel
 
 
 @Composable
-fun PlaylistScreen(playlistViewModel: PlaylistViewModel){
-    val plistUiState by playlistViewModel.uiState.collectAsState()
+fun PlaylistScreen(playlistViewModel: PlaylistViewModel,
+                   playerViewModel: PlayerViewModel
+){
+    val playlistUiState by playlistViewModel.uiState.collectAsState()
+    val playerUiState by playerViewModel.uiState.collectAsState()
 
-    PlaylistScreenContent(playlistUiState = plistUiState, onTapFavorite = {
+    PlaylistScreenContent(
+        playlistUiState = playlistUiState,
+        playerUiState = playerUiState,
+
+        onTapFavorite = {
         Log.d("PlaylistScreen", "Tap favorite $it")
-        playlistViewModel.toggleFavorite(it)
-    })
+        playlistViewModel.toggleFavorite(it)},
+
+        onTapSong = {
+            playerViewModel.load(it, playlistUiState.album)
+            playerViewModel.play()
+        }
+    )
 }
 
 @Composable
-private fun PlaylistScreenContent(playlistUiState: PlaylistUiState, onTapFavorite: (Boolean) -> Unit){
+private fun PlaylistScreenContent(
+    playlistUiState: PlaylistUiState,
+    playerUiState: PlayerUiState,
+    onTapFavorite: (Boolean) -> Unit,
+    onTapSong: (Song) -> Unit
+){
     Column(modifier = Modifier
         .padding(16.dp)
     ){
@@ -62,7 +81,10 @@ private fun PlaylistScreenContent(playlistUiState: PlaylistUiState, onTapFavorit
 
         PlaylistHeader(album = playlistUiState.album)
 
-        PlaylistContent(playlist = playlistUiState.playlist)
+        PlaylistContent(
+            playlist = playlistUiState.playlist,
+            currentSong = playerUiState.song,
+            onTapSong = onTapSong)
     }
 }
 
@@ -82,9 +104,9 @@ private fun Cover(
                 modifier = Modifier
                     .size(28.dp)
                     .align(Alignment.TopEnd)
-                    .clickable{
-                    onTapFavorite(!isFavorite)
-                },
+                    .clickable {
+                        onTapFavorite(!isFavorite)
+                    },
                 painter = painterResource(
                     id = if(isFavorite){
                         R.drawable.ic_favorite_24
@@ -151,11 +173,15 @@ private fun PlaylistHeader(album : Album){
 }
 
 @Composable
-private fun PlaylistContent(playlist : List<Song>){
+private fun PlaylistContent(
+    playlist : List<Song>,
+    currentSong : Song?,
+    onTapSong: (Song) -> Unit
+){
     val state = rememberLazyListState()
     LazyColumn(state = state) {
-        items(playlist){item ->
-            Song(item, false)
+        items(playlist){song ->
+            Song(song, currentSong == song, onTapSong)
         }
         
         item{
@@ -165,9 +191,17 @@ private fun PlaylistContent(playlist : List<Song>){
 }
 
 @Composable
-private fun Song(song : Song, isPlaying : Boolean){
+private fun Song(
+    song : Song,
+    isPlaying : Boolean,
+    onTapSong : (Song) -> Unit
+){
     Row(
-        modifier = Modifier.padding(vertical = 8.dp),
+        modifier = Modifier
+            .padding(vertical = 8.dp)
+            .clickable {
+                onTapSong(song)
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1.0f)) {
